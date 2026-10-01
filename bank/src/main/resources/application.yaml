@@ -1,3 +1,31 @@
 spring:
   application:
-    name: bank
+    name: lipari-bank
+  profiles:
+    active: dev
+
+liparibank:
+  bank-code: LPBK
+  max-transfer-amount: 10000.00
+  audit:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    root: INFO
