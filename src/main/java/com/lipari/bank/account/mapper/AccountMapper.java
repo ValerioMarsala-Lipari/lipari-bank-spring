@@ -10,8 +10,9 @@ import org.mapstruct.Mapping;
 public interface AccountMapper {
 
   @Mapping(source = "initialBalance", target = "balance")
-  @Mapping(source = "fiscalCode", target = "fiscalCode")
+  @Mapping(target = "customer", ignore = true)
   Account toEntity(AccountCreateRequest request);
 
+  @Mapping(source = "customer.fiscalCode", target = "fiscalCode")
   AccountResponse toResponse(Account account);
 }

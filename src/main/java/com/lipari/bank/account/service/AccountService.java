@@ -39,11 +39,10 @@ public class AccountService {
   public AccountResponse findById(Long id) {
     log.debug("Retrieving account with id: {}", id);
 
-    Account account = accountRepository.findById(id);
-
-    if (account == null) {
-      throw new ResourceNotFoundException("Account not found with id: " + id);
-    }
+    Account account = accountRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Account not found with id: " + id
+        ));
 
     return accountMapper.toResponse(account);
   }
@@ -55,15 +54,12 @@ public class AccountService {
     );
 
     Customer customer = customerRepository.findByFiscalCode(
-        request.fiscalCode()
-    );
-
-    if (customer == null) {
-      throw new ResourceNotFoundException(
-          "Customer not found with fiscal code: "
-              + request.fiscalCode()
-      );
-    }
+            request.fiscalCode()
+        )
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Customer not found with fiscal code: "
+                + request.fiscalCode()
+        ));
 
     Account account = accountMapper.toEntity(request);
 
@@ -75,6 +71,7 @@ public class AccountService {
             .toUpperCase()
     );
 
+    account.setCustomer(customer);
     account.setStatus(AccountStatus.ACTIVE);
     account.setCreatedAt(LocalDateTime.now());
 
@@ -92,11 +89,10 @@ public class AccountService {
   public AccountResponse update(Long id, AccountUpdateRequest request) {
     log.info("Updating account with id: {}", id);
 
-    Account account = accountRepository.findById(id);
-
-    if (account == null) {
-      throw new ResourceNotFoundException("Account not found with id: " + id);
-    }
+    Account account = accountRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Account not found with id: " + id
+        ));
 
     account.setBalance(request.balance());
 

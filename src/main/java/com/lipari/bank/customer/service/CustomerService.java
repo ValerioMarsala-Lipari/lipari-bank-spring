@@ -34,13 +34,10 @@ public class CustomerService {
   public CustomerResponse findById(Long id) {
     log.debug("Retrieving customer with id: {}", id);
 
-    Customer customer = customerRepository.findById(id);
-
-    if (customer == null) {
-      throw new ResourceNotFoundException(
-          "Customer not found with id: " + id
-      );
-    }
+    Customer customer = customerRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Customer not found with id: " + id
+        ));
 
     return customerMapper.toResponse(customer);
   }
@@ -71,13 +68,10 @@ public class CustomerService {
   ) {
     log.info("Updating customer with id: {}", id);
 
-    Customer customer = customerRepository.findById(id);
-
-    if (customer == null) {
-      throw new ResourceNotFoundException(
-          "Customer not found with id: " + id
-      );
-    }
+    Customer customer = customerRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Customer not found with id: " + id
+        ));
 
     customerMapper.updateEntityFromRequest(request, customer);
 
