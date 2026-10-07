@@ -11,13 +11,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -71,6 +68,40 @@ public class CustomerController {
     );
   }
 
+  @GetMapping(
+      value = "/search",
+      params = {"lastName", "status"}
+  )
+  @Operation(
+      summary = "Search customers by last name and status",
+      description = "Returns customers matching the given last name and status"
+  )
+  @ApiResponses({
+      @ApiResponse(
+          responseCode = "200",
+          description = "Customers retrieved successfully"
+      )
+  })
+  public ResponseEntity<List<CustomerResponse>> findByLastNameAndStatus(
+      @Parameter(
+          description = "Customer last name",
+          example = "Rossi"
+      )
+      @RequestParam
+      String lastName,
+
+      @Parameter(
+          description = "Customer status",
+          example = "ACTIVE"
+      )
+      @RequestParam
+      CustomerStatus status
+  ) {
+    return ResponseEntity.ok(
+        customerService.findByLastNameAndStatus(lastName, status)
+    );
+  }
+
   @GetMapping(value = "/search", params = "status")
   @Operation(
       summary = "Search customers by status",
@@ -83,7 +114,10 @@ public class CustomerController {
       )
   })
   public ResponseEntity<List<CustomerResponse>> findByStatus(
-      @Parameter(description = "Customer status", example = "ACTIVE")
+      @Parameter(
+          description = "Customer status",
+          example = "ACTIVE"
+      )
       @RequestParam
       CustomerStatus status
   ) {
@@ -104,7 +138,10 @@ public class CustomerController {
       )
   })
   public ResponseEntity<List<CustomerResponse>> findByLastName(
-      @Parameter(description = "Customer last name", example = "Rossi")
+      @Parameter(
+          description = "Customer last name",
+          example = "Rossi"
+      )
       @RequestParam
       String lastName
   ) {
@@ -116,7 +153,7 @@ public class CustomerController {
   @GetMapping("/{id}")
   @Operation(
       summary = "Get customer by ID",
-      description = "Returns a single customer by its ID"
+      description = "Returns a customer by its ID"
   )
   @ApiResponses({
       @ApiResponse(
@@ -129,10 +166,7 @@ public class CustomerController {
       )
   })
   public ResponseEntity<CustomerResponse> findById(
-      @Parameter(description = "Customer ID", example = "1")
-      @PathVariable
-      @Positive
-      Long id
+      @PathVariable Long id
   ) {
     return ResponseEntity.ok(customerService.findById(id));
   }
@@ -153,21 +187,10 @@ public class CustomerController {
       )
   })
   public ResponseEntity<CustomerResponse> create(
-      @Valid
-      @RequestBody
-      CustomerCreateRequest request
+      @Valid @RequestBody CustomerCreateRequest request
   ) {
-    CustomerResponse response = customerService.create(request);
-
-    URI location = ServletUriComponentsBuilder
-        .fromCurrentRequest()
-        .path("/{id}")
-        .buildAndExpand(response.id())
-        .toUri();
-
-    return ResponseEntity
-        .created(location)
-        .body(response);
+    return ResponseEntity.status(201)
+        .body(customerService.create(request));
   }
 
   @PutMapping("/{id}")
@@ -190,14 +213,8 @@ public class CustomerController {
       )
   })
   public ResponseEntity<CustomerResponse> update(
-      @Parameter(description = "Customer ID", example = "1")
-      @PathVariable
-      @Positive
-      Long id,
-
-      @Valid
-      @RequestBody
-      CustomerUpdateRequest request
+      @PathVariable Long id,
+      @Valid @RequestBody CustomerUpdateRequest request
   ) {
     return ResponseEntity.ok(
         customerService.update(id, request)
@@ -207,7 +224,7 @@ public class CustomerController {
   @DeleteMapping("/{id}")
   @Operation(
       summary = "Delete customer",
-      description = "Deletes an existing customer"
+      description = "Deletes a customer by its ID"
   )
   @ApiResponses({
       @ApiResponse(
@@ -220,12 +237,10 @@ public class CustomerController {
       )
   })
   public ResponseEntity<Void> delete(
-      @Parameter(description = "Customer ID", example = "1")
-      @PathVariable
-      @Positive
-      Long id
+      @PathVariable Long id
   ) {
     customerService.delete(id);
+
     return ResponseEntity.noContent().build();
   }
 }

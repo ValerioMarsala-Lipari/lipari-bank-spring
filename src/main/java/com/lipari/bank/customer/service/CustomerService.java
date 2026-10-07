@@ -120,4 +120,21 @@ public class CustomerService {
         .map(customerMapper::toResponse)
         .toList();
   }
+
+  public List<CustomerResponse> findByLastNameAndStatus(
+      String lastName,
+      CustomerStatus status
+  ) {
+    log.debug(
+        "Retrieving customers with last name: {} and status: {}",
+        lastName,
+        status
+    );
+
+    return customerRepository
+        .findByLastNameAndStatus(lastName, status)
+        .stream()
+        .map(customerMapper::toResponse)
+        .toList();
+  }
 }
