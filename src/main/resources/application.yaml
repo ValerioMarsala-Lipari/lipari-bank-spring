@@ -3,6 +3,11 @@ spring:
     name: lipari-bank
   profiles:
     active: dev
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
 liparibank:
   bank-code: LPBK
