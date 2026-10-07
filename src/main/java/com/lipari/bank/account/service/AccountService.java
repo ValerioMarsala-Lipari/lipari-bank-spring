@@ -54,12 +54,11 @@ public class AccountService {
     );
 
     Customer customer = customerRepository.findByFiscalCode(
-            request.fiscalCode()
-        )
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Customer not found with fiscal code: "
-                + request.fiscalCode()
-        ));
+        request.fiscalCode()
+    ).orElseThrow(() -> new ResourceNotFoundException(
+        "Customer not found with fiscal code: "
+            + request.fiscalCode()
+    ));
 
     Account account = accountMapper.toEntity(request);
 
@@ -109,5 +108,16 @@ public class AccountService {
     }
 
     accountRepository.deleteById(id);
+  }
+
+  public AccountResponse findByIban(String iban) {
+    log.debug("Retrieving account with iban: {}", iban);
+
+    Account account = accountRepository.findByIban(iban)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Account not found with iban: " + iban
+        ));
+
+    return accountMapper.toResponse(account);
   }
 }

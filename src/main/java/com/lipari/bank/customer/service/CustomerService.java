@@ -91,4 +91,33 @@ public class CustomerService {
 
     customerRepository.deleteById(id);
   }
+
+  public CustomerResponse findByFiscalCode(String fiscalCode) {
+    log.debug("Retrieving customer with fiscal code: {}", fiscalCode);
+
+    Customer customer = customerRepository.findByFiscalCode(fiscalCode)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Customer not found with fiscal code: " + fiscalCode
+        ));
+
+    return customerMapper.toResponse(customer);
+  }
+
+  public List<CustomerResponse> findByStatus(CustomerStatus status) {
+    log.debug("Retrieving customers with status: {}", status);
+
+    return customerRepository.findByStatus(status)
+        .stream()
+        .map(customerMapper::toResponse)
+        .toList();
+  }
+
+  public List<CustomerResponse> findByLastName(String lastName) {
+    log.debug("Retrieving customers with last name: {}", lastName);
+
+    return customerRepository.findByLastName(lastName)
+        .stream()
+        .map(customerMapper::toResponse)
+        .toList();
+  }
 }

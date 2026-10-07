@@ -45,6 +45,29 @@ public class AccountController {
     return ResponseEntity.ok(accountService.findAll());
   }
 
+  @GetMapping(value = "/search", params = "iban")
+  @Operation(
+      summary = "Search account by IBAN",
+      description = "Returns an account matching the given IBAN"
+  )
+  @ApiResponses({
+      @ApiResponse(
+          responseCode = "200",
+          description = "Account found"
+      ),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Account not found"
+      )
+  })
+  public ResponseEntity<AccountResponse> findByIban(
+      @Parameter(description = "Account IBAN")
+      @RequestParam
+      String iban
+  ) {
+    return ResponseEntity.ok(accountService.findByIban(iban));
+  }
+
   @GetMapping("/{id}")
   @Operation(
       summary = "Get account by ID",
