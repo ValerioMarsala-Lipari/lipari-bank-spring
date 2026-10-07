@@ -3,6 +3,10 @@ spring:
     name: lipari-bank
   profiles:
     active: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/liparibank
+    username: liparibank_user
+    password: liparibank_secret
   jpa:
     hibernate:
       ddl-auto: validate

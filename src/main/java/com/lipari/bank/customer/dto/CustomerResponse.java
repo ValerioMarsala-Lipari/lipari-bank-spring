@@ -1,8 +1,11 @@
 package com.lipari.bank.customer.dto;
 
+import com.lipari.bank.account.dto.AccountSummaryResponse;
 import com.lipari.bank.customer.entity.CustomerStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
+
+import java.util.List;
 
 @Builder
 @Schema(description = "Customer data returned by the API")
@@ -45,6 +48,8 @@ public record CustomerResponse(
         description = "Customer status",
         example = "ACTIVE"
     )
-    CustomerStatus status
+    CustomerStatus status,
+
+    List<AccountSummaryResponse> accounts
 ) {
 }

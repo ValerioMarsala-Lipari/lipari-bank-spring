@@ -11,6 +11,10 @@ public interface AccountMapper {
 
   @Mapping(source = "initialBalance", target = "balance")
   @Mapping(target = "customer", ignore = true)
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "iban", ignore = true)
+  @Mapping(target = "status", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
   Account toEntity(AccountCreateRequest request);
 
   @Mapping(source = "customer.fiscalCode", target = "fiscalCode")

@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: liparibank-db
+    environment:
+      POSTGRES_DB: liparibank
+      POSTGRES_USER: liparibank_user
+      POSTGRES_PASSWORD: liparibank_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - liparibank_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U liparibank_user -d liparibank"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  liparibank_data:
