@@ -8,8 +8,10 @@ import com.lipari.bank.customer.entity.Customer;
 import com.lipari.bank.customer.entity.CustomerStatus;
 import com.lipari.bank.customer.mapper.CustomerMapper;
 import com.lipari.bank.customer.repository.CustomerRepository;
+import com.lipari.bank.customer.specification.CustomerSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -103,36 +105,25 @@ public class CustomerService {
     return customerMapper.toResponse(customer);
   }
 
-  public List<CustomerResponse> findByStatus(CustomerStatus status) {
-    log.debug("Retrieving customers with status: {}", status);
-
-    return customerRepository.findByStatus(status)
-        .stream()
-        .map(customerMapper::toResponse)
-        .toList();
-  }
-
-  public List<CustomerResponse> findByLastName(String lastName) {
-    log.debug("Retrieving customers with last name: {}", lastName);
-
-    return customerRepository.findByLastName(lastName)
-        .stream()
-        .map(customerMapper::toResponse)
-        .toList();
-  }
-
-  public List<CustomerResponse> findByLastNameAndStatus(
+  public List<CustomerResponse> search(
       String lastName,
       CustomerStatus status
   ) {
-    log.debug(
-        "Retrieving customers with last name: {} and status: {}",
-        lastName,
-        status
-    );
+    Specification<Customer> specification = Specification.allOf();
 
-    return customerRepository
-        .findByLastNameAndStatus(lastName, status)
+    if (lastName != null) {
+      specification = specification.and(
+          CustomerSpecification.hasLastName(lastName)
+      );
+    }
+
+    if (status != null) {
+      specification = specification.and(
+          CustomerSpecification.hasStatus(status)
+      );
+    }
+
+    return customerRepository.findAll(specification)
         .stream()
         .map(customerMapper::toResponse)
         .toList();

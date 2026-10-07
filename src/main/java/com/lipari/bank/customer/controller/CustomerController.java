@@ -68,13 +68,10 @@ public class CustomerController {
     );
   }
 
-  @GetMapping(
-      value = "/search",
-      params = {"lastName", "status"}
-  )
+  @GetMapping("/search")
   @Operation(
-      summary = "Search customers by last name and status",
-      description = "Returns customers matching the given last name and status"
+      summary = "Search customers",
+      description = "Searches customers using optional filters"
   )
   @ApiResponses({
       @ApiResponse(
@@ -82,71 +79,23 @@ public class CustomerController {
           description = "Customers retrieved successfully"
       )
   })
-  public ResponseEntity<List<CustomerResponse>> findByLastNameAndStatus(
+  public ResponseEntity<List<CustomerResponse>> search(
       @Parameter(
           description = "Customer last name",
           example = "Rossi"
       )
-      @RequestParam
+      @RequestParam(required = false)
       String lastName,
 
       @Parameter(
           description = "Customer status",
           example = "ACTIVE"
       )
-      @RequestParam
+      @RequestParam(required = false)
       CustomerStatus status
   ) {
     return ResponseEntity.ok(
-        customerService.findByLastNameAndStatus(lastName, status)
-    );
-  }
-
-  @GetMapping(value = "/search", params = "status")
-  @Operation(
-      summary = "Search customers by status",
-      description = "Returns customers matching the given status"
-  )
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "200",
-          description = "Customers retrieved successfully"
-      )
-  })
-  public ResponseEntity<List<CustomerResponse>> findByStatus(
-      @Parameter(
-          description = "Customer status",
-          example = "ACTIVE"
-      )
-      @RequestParam
-      CustomerStatus status
-  ) {
-    return ResponseEntity.ok(
-        customerService.findByStatus(status)
-    );
-  }
-
-  @GetMapping(value = "/search", params = "lastName")
-  @Operation(
-      summary = "Search customers by last name",
-      description = "Returns customers matching the given last name"
-  )
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "200",
-          description = "Customers retrieved successfully"
-      )
-  })
-  public ResponseEntity<List<CustomerResponse>> findByLastName(
-      @Parameter(
-          description = "Customer last name",
-          example = "Rossi"
-      )
-      @RequestParam
-      String lastName
-  ) {
-    return ResponseEntity.ok(
-        customerService.findByLastName(lastName)
+        customerService.search(lastName, status)
     );
   }
 
