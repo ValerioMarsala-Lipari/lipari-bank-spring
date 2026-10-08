@@ -1,18 +1,24 @@
 # LipariBank
 
-Backend bancario didattico sviluppato con **Java** e **Spring Boot**, con l'obiettivo di applicare progressivamente concetti di backend development enterprise.
+Backend bancario didattico sviluppato con **Java 21** e **Spring Boot**, con l'obiettivo di applicare progressivamente concetti di backend development enterprise.
 
-Il progetto viene sviluppato in maniera incrementale attraverso esercizi e funzionalità che introducono concetti di architettura, REST API, validazione, gestione degli errori, DTO, mapping e successivamente persistenza, sicurezza e altri aspetti tipici di un backend enterprise.
+Il progetto viene sviluppato in maniera incrementale attraverso esercizi e funzionalità che introducono concetti di architettura, REST API, dependency injection, persistenza, JPA, validazione, gestione degli errori, DTO, mapping, transazioni, sicurezza e altri aspetti tipici di un backend enterprise.
 
 ## Stack
 
 * Java 21
 * Spring Boot 4.1.1
 * Maven
+* PostgreSQL 16
+* Spring Data JPA
+* Hibernate
+* Liquibase
 * MapStruct
 * Lombok
 * Jakarta Bean Validation
+* Spring Security
 * Springdoc OpenAPI / Swagger UI
+* Docker
 
 ## Architettura
 
@@ -20,11 +26,6 @@ Il progetto segue un approccio **feature-first**, con una separazione interna a 
 
 ```text
 com.lipari.bank
-├── common/
-│   └── exception/
-│
-├── config/
-│
 ├── account/
 │   ├── controller/
 │   ├── service/
@@ -41,18 +42,29 @@ com.lipari.bank
 │   ├── dto/
 │   └── entity/
 │
-└── transfer/
-    ├── controller/
-    ├── service/
-    ├── repository/
-    ├── dto/
-    └── entity/
+├── transfer/
+│   ├── controller/
+│   ├── service/
+│   ├── repository/
+│   ├── dto/
+│   └── entity/
+│
+├── auth/
+│   ├── controller/
+│   ├── service/
+│   ├── repository/
+│   ├── dto/
+│   └── entity/
+│
+└── shared/
+    ├── config/
+    └── exception/
 ```
 
 La classe principale dell'applicazione è:
 
 ```text
-com.lipari.bank.BankApplication
+com.lipari.bank.LipariBankApplication
 ```
 
 ### Layer architecture
@@ -71,6 +83,8 @@ Service
 Repository
      ↓
 Entity
+     ↓
+Database
 
 Entity
      ↓
@@ -81,11 +95,11 @@ Response DTO
 HTTP Response
 ```
 
-I Controller sono responsabili dell'esposizione delle API REST, i Service della logica applicativa, i Repository dell'accesso ai dati e i Mapper della conversione tra DTO ed Entity.
+I Controller sono responsabili dell'esposizione delle API REST, i Service della logica applicativa e delle transazioni, i Repository dell'accesso ai dati e i Mapper della conversione tra DTO ed Entity.
 
 ## REST API
 
-Sono attualmente implementate le API CRUD per **Account** e **Customer**.
+Sono attualmente implementate le API CRUD per **Account** e **Customer**, oltre alle API relative ai trasferimenti e all'autenticazione.
 
 ### Account
 
@@ -107,13 +121,21 @@ PUT    /api/v1/customers/{id}
 DELETE /api/v1/customers/{id}
 ```
 
-Gli endpoint utilizzano DTO distinti per le operazioni di creazione, aggiornamento e risposta.
+### Authentication
+
+```text
+POST   /api/v1/auth/register
+```
+
+La registrazione crea un nuovo utente applicativo con ruolo `USER`.
+
+Gli endpoint protetti richiedono autenticazione.
 
 ## DTO
 
-Per ogni feature vengono utilizzati DTO separati per evitare di esporre direttamente le Entity attraverso le API.
+Per le API vengono utilizzati DTO separati dalle Entity, evitando di esporre direttamente il modello di persistenza.
 
-Attualmente sono presenti:
+Attualmente sono presenti DTO dedicati alle principali operazioni:
 
 ```text
 Account
@@ -125,9 +147,23 @@ Customer
 ├── CustomerCreateRequest
 ├── CustomerUpdateRequest
 └── CustomerResponse
+
+Auth
+├── RegisterRequest
+└── RegisterResponse
 ```
 
 La validazione degli input viene effettuata tramite **Jakarta Bean Validation**.
+
+Esempi di vincoli utilizzati:
+
+* `@NotBlank`
+* `@NotNull`
+* `@Email`
+* `@PositiveOrZero`
+* `@Valid`
+
+Gli errori di validazione vengono restituiti tramite una risposta HTTP `400 Bad Request`.
 
 ## MapStruct
 
@@ -139,27 +175,70 @@ Account ───────────────→ AccountResponse
 
 CustomerCreateRequest ──→ Customer
 Customer ───────────────→ CustomerResponse
+
 CustomerUpdateRequest ──→ Customer
 ```
 
 Per gli aggiornamenti viene utilizzato `@MappingTarget` per modificare l'Entity esistente.
 
-## In-memory Repository
+## Persistenza
 
-La persistenza attuale è volutamente semplificata e utilizza strutture dati in memoria.
+La persistenza è implementata tramite **Spring Data JPA** e **PostgreSQL**.
 
 ```text
-Repository
-    ↓
-HashMap<Long, Entity>
+Service
+   ↓
+Spring Data Repository
+   ↓
+JPA / Hibernate
+   ↓
+PostgreSQL
 ```
 
-Sono attualmente presenti:
+Il database PostgreSQL viene eseguito tramite Docker.
 
-* `AccountRepository`
-* `CustomerRepository`
+Configurazione di sviluppo:
 
-L'implementazione potrà essere successivamente sostituita da una vera persistenza tramite database e Spring Data JPA.
+```text
+Database: liparibank
+User:     liparibank_user
+Port:     5432
+```
+
+Hibernate utilizza:
+
+```yaml
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+```
+
+Lo schema del database non viene quindi generato automaticamente da Hibernate.
+
+## Liquibase
+
+La gestione dello schema del database è affidata a **Liquibase**.
+
+I cambiamenti allo schema vengono organizzati tramite changelog versionati:
+
+```text
+src/main/resources/db/changelog/
+├── db.changelog-master.yaml
+├── 001-...
+├── 002-...
+├── 003-...
+└── 004-create-app-users.yaml
+```
+
+Liquibase permette di mantenere sincronizzato lo schema del database con le versioni del progetto.
+
+Tra le tabelle gestite dal progetto sono presenti:
+
+* `customers`
+* `accounts`
+* `transfers`
+* `app_users`
 
 ## Account e Customer
 
@@ -184,34 +263,152 @@ CustomerRepository
 
 Questa verifica viene effettuata nel `AccountService` prima della creazione dell'Account.
 
+## Trasferimenti
+
+Il progetto implementa il trasferimento di denaro tra Account tramite un `TransferService`.
+
+L'operazione comprende:
+
+```text
+Source Account
+      │
+      │ debit
+      ▼
+TransferService
+      │
+      │ credit
+      ▼
+Destination Account
+```
+
+Il trasferimento viene eseguito all'interno di una singola transazione Spring:
+
+```java
+@Transactional
+```
+
+In questo modo il debit e il credit fanno parte della stessa unità transazionale.
+
+Se il trasferimento non può essere completato, l'operazione viene sottoposta a rollback e i saldi rimangono invariati.
+
+Sono presenti eccezioni di dominio dedicate, tra cui:
+
+* `AccountNotFoundException`
+* `InsufficientFundsException`
+
+## Gestione delle transazioni
+
+La gestione transazionale viene effettuata a livello di Service.
+
+Il `TransferService` garantisce l'atomicità dell'operazione:
+
+```text
+BEGIN TRANSACTION
+      │
+      ├── debit account
+      │
+      ├── credit account
+      │
+      └── create transfer
+             │
+       ┌─────┴─────┐
+       │           │
+     COMMIT      ROLLBACK
+       │           │
+     success     failure
+```
+
+Sono stati verificati sia il caso di trasferimento valido sia il caso di saldo insufficiente.
+
 ## Gestione degli errori
 
 La gestione delle eccezioni è centralizzata tramite `@RestControllerAdvice`.
 
-Attualmente vengono gestiti:
+Attualmente vengono gestiti, tra gli altri:
 
-* `ResourceNotFoundException` → `404 Not Found`
+* `AccountNotFoundException` → `404 Not Found`
+* `InsufficientFundsException` → `400 Bad Request`
+* `UsernameAlreadyExistsException` → `409 Conflict`
 * `MethodArgumentNotValidException` → `400 Bad Request`
 
 Le risposte di validazione includono gli errori relativi ai singoli campi della richiesta.
 
-## OpenAPI / Swagger
+## Spring Security
 
-La documentazione delle API REST viene generata tramite **Springdoc OpenAPI**.
+La sicurezza degli endpoint è implementata tramite **Spring Security**.
 
-Swagger UI è disponibile all'indirizzo:
-
-```text
-http://localhost:8080/swagger-ui.html
-```
-
-La specifica OpenAPI è disponibile tramite:
+Gli utenti applicativi sono rappresentati dall'Entity:
 
 ```text
-http://localhost:8080/v3/api-docs
+AppUser
+├── id
+├── username
+├── password
+├── email
+└── role
 ```
 
-Controller, endpoint, DTO e relativi campi sono documentati tramite annotazioni OpenAPI.
+I ruoli disponibili sono:
+
+```text
+USER
+ADMIN
+```
+
+Le password non vengono salvate in chiaro: durante la registrazione vengono cifrate tramite **BCrypt**.
+
+### Registrazione
+
+```text
+POST /api/v1/auth/register
+```
+
+Il flusso di registrazione è:
+
+```text
+RegisterRequest
+      ↓
+AuthService
+      ↓
+username duplicate check
+      ↓
+BCrypt password hashing
+      ↓
+AppUserRepository
+      ↓
+PostgreSQL
+```
+
+La response di registrazione non espone il password hash.
+
+### Autenticazione
+
+L'autenticazione attuale utilizza **HTTP Basic**.
+
+La configurazione della security chain prevede:
+
+```text
+/api/v1/auth/**   → permitAll()
+/api/v1/admin/**  → hasRole("ADMIN")
+tutto il resto    → authenticated()
+```
+
+La sessione è configurata come stateless e il CSRF è disabilitato.
+
+Gli endpoint protetti senza autenticazione restituiscono:
+
+```text
+401 Unauthorized
+```
+
+Con credenziali valide, ad esempio:
+
+```text
+GET /api/v1/accounts
+Authorization: Basic ...
+```
+
+la richiesta viene autenticata e raggiunge il Controller.
 
 ## Configurazione
 
@@ -239,8 +436,8 @@ Configurazione attuale:
 
 ```yaml
 liparibank:
-  bank-code: LPBK
-  max-transfer-amount: 10000.00
+  bank-code: LPRI-IT
+  max-transfer-amount: 50000.00
   audit:
     enabled: true
 ```
@@ -270,6 +467,24 @@ spring:
     active: dev
 ```
 
+## OpenAPI / Swagger
+
+La documentazione delle API REST viene generata tramite **Springdoc OpenAPI**.
+
+Swagger UI è disponibile all'indirizzo:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+La specifica OpenAPI è disponibile tramite:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+Controller, endpoint, DTO e relativi campi sono documentati tramite annotazioni OpenAPI.
+
 ## Spring Boot concepts
 
 La prima parte del progetto è dedicata alla pratica dei principali meccanismi di Spring:
@@ -286,10 +501,19 @@ La prima parte del progetto è dedicata alla pratica dei principali meccanismi d
 * Bean scopes
 * Spring Boot auto-configuration
 * Proxy e AOP
+* Spring Data JPA
+* JPA Entity Mapping
+* Fetch strategies
+* N+1 query problem
+* Cascade operations
+* Transazioni
+* Isolation levels
+* Rollback
+* Spring Security
 
 ## Stato del progetto
 
-Il progetto ha completato la prima implementazione REST prevista per il modulo G2.
+Il progetto ha completato le principali fasi didattiche iniziali, passando da una prima implementazione REST in-memory a una vera persistenza relazionale con JPA e PostgreSQL e introducendo successivamente validazione, transazioni e sicurezza.
 
 ### Completato
 
@@ -303,12 +527,26 @@ Il progetto ha completato la prima implementazione REST prevista per il modulo G
 * CRUD completo per Customer;
 * DTO Create / Update / Response;
 * MapStruct per il mapping DTO/Entity;
-* repository in-memory tramite `HashMap`;
 * validazione tramite Jakarta Bean Validation;
 * gestione centralizzata delle eccezioni;
 * documentazione OpenAPI / Swagger;
-* validazione dell'esistenza del Customer prima della creazione di un Account.
+* validazione dell'esistenza del Customer prima della creazione di un Account;
+* introduzione di PostgreSQL tramite Docker;
+* persistenza tramite Spring Data JPA e Hibernate;
+* gestione dello schema tramite Liquibase;
+* Entity e Repository per i trasferimenti;
+* `TransferService` transazionale;
+* gestione del rollback in caso di saldo insufficiente;
+* eccezioni custom per gli errori di dominio;
+* validazione dei DTO con `@Valid`;
+* Entity `AppUser` e ruoli `USER` / `ADMIN`;
+* registrazione degli utenti;
+* password hashing tramite BCrypt;
+* autenticazione tramite Spring Security e HTTP Basic;
+* protezione degli endpoint tramite ruoli e autenticazione;
+* configurazione stateless della Security;
+* gestione degli username duplicati tramite `409 Conflict`.
 
 ### Prossimi sviluppi
 
-Il progetto continuerà progressivamente con l'introduzione di ulteriori concetti e funzionalità backend, tra cui il dominio dei trasferimenti e successivamente aspetti di persistenza, sicurezza e altre componenti tipiche di un'applicazione enterprise.
+Il progetto continuerà progressivamente con l'introduzione di ulteriori concetti e funzionalità backend enterprise, approfondendo autenticazione e autorizzazione, gestione avanzata delle transazioni, audit, testing, aspetti architetturali e ulteriori funzionalità del dominio bancario.
