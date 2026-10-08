@@ -13,7 +13,6 @@ import com.lipari.bank.shared.exception.AccountNotFoundException;
 import com.lipari.bank.shared.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,9 +52,6 @@ public class AccountService {
                         new ResourceNotFoundException("Customer not found with fiscal code: " + request.fiscalCode()));
 
         Account account = accountMapper.toEntity(request);
-
-        account.setIban("IT"
-                + UUID.randomUUID().toString().replace("-", "").substring(0, 24).toUpperCase());
 
         account.setCustomer(customer);
         account.setStatus(AccountStatus.ACTIVE);
