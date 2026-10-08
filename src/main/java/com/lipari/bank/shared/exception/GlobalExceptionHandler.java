@@ -34,4 +34,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleInsufficientFunds(InsufficientFundsException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(ERROR_KEY, exception.getMessage()));
     }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleUsernameAlreadyExists(UsernameAlreadyExistsException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(ERROR_KEY, exception.getMessage()));
+    }
 }

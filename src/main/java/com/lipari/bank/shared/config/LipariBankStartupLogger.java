@@ -1,4 +1,4 @@
-package com.lipari.bank.config;
+package com.lipari.bank.shared.config;
 
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;

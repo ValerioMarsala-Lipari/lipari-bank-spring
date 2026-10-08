@@ -1,4 +1,4 @@
-package com.lipari.bank.config;
+package com.lipari.bank.shared.config;
 
 import java.math.BigDecimal;
 import org.springframework.boot.context.properties.ConfigurationProperties;
