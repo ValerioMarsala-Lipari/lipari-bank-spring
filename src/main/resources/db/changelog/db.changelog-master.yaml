@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/001-create-customers.yaml
   - include:
       file: db/changelog/002-create-accounts.yaml
+  - include:
+      file: db/changelog/003-create-transfers.yaml

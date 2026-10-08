@@ -2,13 +2,12 @@ package com.lipari.bank.account.entity;
 
 import com.lipari.bank.customer.entity.Customer;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "accounts")
@@ -18,24 +17,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Account {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(nullable = false, unique = true)
-  private String iban;
+    @Column(nullable = false, unique = true)
+    private String iban;
 
-  @ManyToOne
-  @JoinColumn(name = "customer_id", nullable = false)
-  private Customer customer;
+    @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
 
-  @Column(nullable = false)
-  private BigDecimal balance;
+    @Column(nullable = false)
+    private BigDecimal balance;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private AccountStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountStatus status;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 }

@@ -11,17 +11,13 @@ import org.springframework.core.env.Environment;
 @ConfigurationPropertiesScan
 public class LipariBankApplication {
 
-	private static final Logger log = LoggerFactory.getLogger(LipariBankApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(LipariBankApplication.class);
 
-	public static void main(String[] args) {
-		var context = SpringApplication.run(LipariBankApplication.class, args);
+    public static void main(String[] args) {
+        var context = SpringApplication.run(LipariBankApplication.class, args);
 
-		Environment environment = context.getEnvironment();
+        Environment environment = context.getEnvironment();
 
-		log.info(
-				"Application started: {}",
-				environment.getProperty("spring.application.name")
-		);
-	}
-
+        log.info("Application started: {}", environment.getProperty("spring.application.name"));
+    }
 }

@@ -2,13 +2,12 @@ package com.lipari.bank.customer.entity;
 
 import com.lipari.bank.account.entity.Account;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "customers")
@@ -18,29 +17,29 @@ import java.util.List;
 @AllArgsConstructor
 public class Customer {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(nullable = false, unique = true)
-  private String fiscalCode;
+    @Column(nullable = false, unique = true)
+    private String fiscalCode;
 
-  @Column(nullable = false)
-  private String firstName;
+    @Column(nullable = false)
+    private String firstName;
 
-  @Column(nullable = false)
-  private String lastName;
+    @Column(nullable = false)
+    private String lastName;
 
-  @Column(nullable = false)
-  private String email;
+    @Column(nullable = false)
+    private String email;
 
-  @Column(nullable = false)
-  private String phone;
+    @Column(nullable = false)
+    private String phone;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private CustomerStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CustomerStatus status;
 
-  @OneToMany(mappedBy = "customer")
-  private List<Account> accounts = new ArrayList<>();
+    @OneToMany(mappedBy = "customer")
+    private List<Account> accounts = new ArrayList<>();
 }

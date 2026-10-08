@@ -6,16 +6,13 @@ import org.springframework.data.jpa.domain.Specification;
 
 public final class CustomerSpecification {
 
-  private CustomerSpecification() {
-  }
+    private CustomerSpecification() {}
 
-  public static Specification<Customer> hasLastName(String lastName) {
-    return (root, query, criteriaBuilder) ->
-        criteriaBuilder.equal(root.get("lastName"), lastName);
-  }
+    public static Specification<Customer> hasLastName(String lastName) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("lastName"), lastName);
+    }
 
-  public static Specification<Customer> hasStatus(CustomerStatus status) {
-    return (root, query, criteriaBuilder) ->
-        criteriaBuilder.equal(root.get("status"), status);
-  }
+    public static Specification<Customer> hasStatus(CustomerStatus status) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status);
+    }
 }

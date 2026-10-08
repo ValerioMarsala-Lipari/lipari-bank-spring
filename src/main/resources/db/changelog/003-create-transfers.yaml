@@ -1,0 +1,63 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-transfers
+      author: valerio
+      changes:
+        - createTable:
+            tableName: transfers
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: from_account_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: to_account_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: amount
+                  type: DECIMAL(19, 2)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: description
+                  type: VARCHAR(140)
+
+              - column:
+                  name: executed_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: transfers
+            baseColumnNames: from_account_id
+            referencedTableName: accounts
+            referencedColumnNames: id
+            constraintName: fk_transfers_from_account
+
+        - addForeignKeyConstraint:
+            baseTableName: transfers
+            baseColumnNames: to_account_id
+            referencedTableName: accounts
+            referencedColumnNames: id
+            constraintName: fk_transfers_to_account
