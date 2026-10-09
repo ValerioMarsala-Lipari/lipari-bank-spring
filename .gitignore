@@ -4,3 +4,4 @@ target/
 *.class
 .DS_Store
 .env
+src/main/resources/application-local.yaml

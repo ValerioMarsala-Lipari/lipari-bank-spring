@@ -1,7 +1,6 @@
 package com.lipari.bank.auth.controller;
 
-import com.lipari.bank.auth.dto.RegisterRequest;
-import com.lipari.bank.auth.dto.RegisterResponse;
+import com.lipari.bank.auth.dto.*;
 import com.lipari.bank.auth.entity.AppUser;
 import com.lipari.bank.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -23,5 +22,17 @@ public class AuthController {
         RegisterResponse response =
                 new RegisterResponse(appUser.getId(), appUser.getUsername(), appUser.getEmail(), appUser.getRole());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshTokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        RefreshTokenResponse response = authService.refresh(request);
+        return ResponseEntity.ok(response);
     }
 }
