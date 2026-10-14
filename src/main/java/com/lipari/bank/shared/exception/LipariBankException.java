@@ -1,6 +1,6 @@
 package com.lipari.bank.shared.exception;
 
-public class LipariBankException extends RuntimeException {
+public class LipariBankException extends BusinessException {
 
     public LipariBankException(String message) {
         super(message);

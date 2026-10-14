@@ -11,10 +11,12 @@ import com.lipari.bank.transfer.entity.TransferStatus;
 import com.lipari.bank.transfer.repository.TransferRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TransferService {
 
@@ -23,6 +25,7 @@ public class TransferService {
 
     @Transactional
     public TransferResponse executeTransfer(TransferRequest request) {
+        log.info("Processing transfer request");
         Account fromAccount = accountRepository
                 .findByIban(request.fromIban())
                 .orElseThrow(() -> new AccountNotFoundException(request.fromIban()));
@@ -32,6 +35,7 @@ public class TransferService {
                 .orElseThrow(() -> new AccountNotFoundException(request.toIban()));
 
         if (fromAccount.getBalance().compareTo(request.amount()) < 0) {
+            log.warn("Transfer rejected: insufficient funds");
             throw new InsufficientFundsException(fromAccount.getIban(), request.amount(), fromAccount.getBalance());
         }
 
@@ -48,6 +52,8 @@ public class TransferService {
         transfer.setStatus(TransferStatus.COMPLETED);
 
         Transfer saved = transferRepository.save(transfer);
+
+        log.info("Transfer completed successfully with id: {}", saved.getId());
 
         return new TransferResponse(
                 saved.getId(),

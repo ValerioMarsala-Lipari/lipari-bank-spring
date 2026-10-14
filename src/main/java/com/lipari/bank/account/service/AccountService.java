@@ -10,7 +10,7 @@ import com.lipari.bank.account.repository.AccountRepository;
 import com.lipari.bank.customer.entity.Customer;
 import com.lipari.bank.customer.repository.CustomerRepository;
 import com.lipari.bank.shared.exception.AccountNotFoundException;
-import com.lipari.bank.shared.exception.ResourceNotFoundException;
+import com.lipari.bank.shared.exception.CustomerNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -44,12 +44,11 @@ public class AccountService {
     }
 
     public AccountResponse create(AccountCreateRequest request) {
-        log.info("Creating new account for fiscal code: {}", request.fiscalCode());
+        log.info("Creating new account");
 
         Customer customer = customerRepository
                 .findByFiscalCode(request.fiscalCode())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Customer not found with fiscal code: " + request.fiscalCode()));
+                .orElseThrow(() -> new CustomerNotFoundException(request.fiscalCode()));
 
         Account account = accountMapper.toEntity(request);
 
@@ -59,7 +58,7 @@ public class AccountService {
 
         Account saved = accountRepository.save(account);
 
-        log.info("Account created with id: {} and IBAN: {}", saved.getId(), saved.getIban());
+        log.info("Account created successfully with id: {}", saved.getId());
 
         return accountMapper.toResponse(saved);
     }
@@ -88,7 +87,7 @@ public class AccountService {
     }
 
     public AccountResponse findByIban(String iban) {
-        log.debug("Retrieving account with iban: {}", iban);
+        log.debug("Retrieving account by IBAN");
 
         Account account = accountRepository.findByIban(iban).orElseThrow(() -> new AccountNotFoundException(iban));
 

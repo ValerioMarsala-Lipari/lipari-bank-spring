@@ -8,7 +8,7 @@ import com.lipari.bank.customer.entity.CustomerStatus;
 import com.lipari.bank.customer.mapper.CustomerMapper;
 import com.lipari.bank.customer.repository.CustomerRepository;
 import com.lipari.bank.customer.specification.CustomerSpecification;
-import com.lipari.bank.shared.exception.ResourceNotFoundException;
+import com.lipari.bank.shared.exception.CustomerNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,15 +34,14 @@ public class CustomerService {
     public CustomerResponse findById(Long id) {
         log.debug("Retrieving customer with id: {}", id);
 
-        Customer customer = customerRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        Customer customer =
+                customerRepository.findById(id).orElseThrow(() -> new CustomerNotFoundException(String.valueOf(id)));
 
         return customerMapper.toResponse(customer);
     }
 
     public CustomerResponse create(CustomerCreateRequest request) {
-        log.info("Creating new customer for fiscal code: {}", request.fiscalCode());
+        log.info("Creating new customer");
 
         Customer customer = customerMapper.toEntity(request);
 
@@ -58,9 +57,8 @@ public class CustomerService {
     public CustomerResponse update(Long id, CustomerUpdateRequest request) {
         log.info("Updating customer with id: {}", id);
 
-        Customer customer = customerRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        Customer customer =
+                customerRepository.findById(id).orElseThrow(() -> new CustomerNotFoundException(String.valueOf(id)));
 
         customerMapper.updateEntityFromRequest(request, customer);
 
@@ -73,18 +71,18 @@ public class CustomerService {
         log.info("Deleting customer with id: {}", id);
 
         if (!customerRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Customer not found with id: " + id);
+            throw new CustomerNotFoundException(String.valueOf(id));
         }
 
         customerRepository.deleteById(id);
     }
 
     public CustomerResponse findByFiscalCode(String fiscalCode) {
-        log.debug("Retrieving customer with fiscal code: {}", fiscalCode);
+        log.debug("Retrieving customer by fiscal code");
 
         Customer customer = customerRepository
                 .findByFiscalCode(fiscalCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with fiscal code: " + fiscalCode));
+                .orElseThrow(() -> new CustomerNotFoundException(fiscalCode));
 
         return customerMapper.toResponse(customer);
     }
