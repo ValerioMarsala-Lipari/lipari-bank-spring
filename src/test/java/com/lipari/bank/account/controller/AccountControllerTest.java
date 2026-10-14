@@ -18,10 +18,9 @@ import com.lipari.bank.auth.filter.JwtAuthenticationFilter;
 import com.lipari.bank.auth.service.CustomUserDetailsService;
 import com.lipari.bank.auth.service.JwtService;
 import com.lipari.bank.shared.config.SecurityConfig;
+import com.lipari.bank.shared.exception.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import com.lipari.bank.shared.exception.AccountNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -119,15 +118,14 @@ class AccountControllerTest {
 
     @Test
     void findById_whenAccountDoesNotExist_returns404() throws Exception {
-        when(accountService.findById(99999L))
-            .thenThrow(new AccountNotFoundException("99999"));
+        when(accountService.findById(99999L)).thenThrow(new AccountNotFoundException("99999"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/accounts/99999")
-                .with(user("test-customer").roles("CUSTOMER")))
-            .andExpect(status().isNotFound())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.title").value("Account not found"))
-            .andExpect(jsonPath("$.detail").value("The requested account was not found."));
+                        .with(user("test-customer").roles("CUSTOMER")))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Account not found"))
+                .andExpect(jsonPath("$.detail").value("The requested account was not found."));
 
         verify(accountService).findById(99999L);
     }
