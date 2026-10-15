@@ -3,6 +3,7 @@ package com.lipari.bank.transfer.controller;
 import com.lipari.bank.transfer.dto.TransferRequest;
 import com.lipari.bank.transfer.dto.TransferResponse;
 import com.lipari.bank.transfer.service.TransferService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/transfers")
 @RequiredArgsConstructor
+@Tag(name = "Transfers", description = "Transfers management API")
 public class TransferController {
 
     private final TransferService transferService;

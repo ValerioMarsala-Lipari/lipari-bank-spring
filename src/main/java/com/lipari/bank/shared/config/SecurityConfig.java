@@ -26,9 +26,12 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(
                         (request, response, exception) -> response.setStatus(HttpStatus.UNAUTHORIZED.value())))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health")
-                        .permitAll()
-                        .requestMatchers("/api/v1/auth/**")
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                "/actuator/health",
+                                "/api/v1/auth/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html")
                         .permitAll()
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")

@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/liparibank}
+    username: ${DB_USERNAME:liparibank_user}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+liparibank:
+  jwt:
+    secret: ${LIPARIBANK_JWT_SECRET}

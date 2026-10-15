@@ -3,18 +3,43 @@ services:
     image: postgres:16-alpine
     container_name: liparibank-db
     environment:
-      POSTGRES_DB: liparibank
-      POSTGRES_USER: liparibank_user
-      POSTGRES_PASSWORD: liparibank_secret
+      POSTGRES_DB: ${DB_NAME:-liparibank}
+      POSTGRES_USER: ${DB_USERNAME:-liparibank_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Imposta DB_PASSWORD nel file .env}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - liparibank_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U liparibank_user -d liparibank"]
+      test: [ "CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\"" ]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: liparibank-app
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-liparibank}
+      DB_USERNAME: ${DB_USERNAME:-liparibank_user}
+      DB_PASSWORD: ${DB_PASSWORD:?Imposta DB_PASSWORD nel file .env}
+      LIPARIBANK_JWT_SECRET: ${LIPARIBANK_JWT_SECRET:?Imposta LIPARIBANK_JWT_SECRET nel file .env}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q -O - http://localhost:8080/actuator/health | grep -q '"status":"UP"'
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
 volumes:
   liparibank_data:
